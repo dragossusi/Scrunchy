@@ -1,7 +1,8 @@
 package data
 
 interface UserData{
-    val email:String
+    val id:Long
+    val username:String
     val name:String
     val role:String
 }

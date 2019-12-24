@@ -1,0 +1,11 @@
+apply plugin: 'kotlin-platform-common'
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
+
+    testCompile 'org.jetbrains.kotlin:kotlin-test-annotations-common'
+    testCompile 'org.jetbrains.kotlin:kotlin-test-common'
+
+    implementation("io.ktor:ktor-client-core:1.2.6")
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version"
+}

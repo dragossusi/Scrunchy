@@ -1,3 +1,5 @@
 rootProject.name = 'Scrunchy'
-
+include ':server'
+include ':common', ':common-jvm'
+include ':jvm'
 enableFeaturePreview('GRADLE_METADATA')
