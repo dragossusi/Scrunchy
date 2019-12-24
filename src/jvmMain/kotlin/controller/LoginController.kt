@@ -2,14 +2,16 @@ package controller
 
 import tornadofx.Controller
 import view.LoginView
+import view.MainView
 
 class LoginController : Controller() {
 
-    val loginView:LoginView by inject()
+    val loginView: LoginView by inject()
+    val mainView: MainView by inject()
 
     fun tryLogin(username: String, password: String, remember: Boolean) {
         runAsync {
-            username == "admin" && password == "secret"
+            username == "dragos@mail.com" && password == "123456"
         } ui { successfulLogin ->
             if (successfulLogin) {
                 loginView.clear()
@@ -21,11 +23,15 @@ class LoginController : Controller() {
                         save()
                     }
                 }
-                TODO()
+                showMainView()
             } else {
                 TODO()
             }
         }
+    }
+
+    fun showMainView() {
+        loginView.replaceWith(mainView, centerOnScreen = true, sizeToScene = true)
     }
 
 }

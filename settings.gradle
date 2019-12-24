@@ -1,4 +1,3 @@
 rootProject.name = 'Scrunchy'
 
-
 enableFeaturePreview('GRADLE_METADATA')
