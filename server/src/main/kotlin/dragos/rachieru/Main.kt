@@ -1,7 +1,9 @@
 package dragos.rachieru
 
+import dragos.rachieru.database.RolesTable
 import dragos.rachieru.database.UsersTable
 import dragos.rachieru.model.BaseResponse
+import dragos.rachieru.model.CompletableResponse
 import dragos.rachieru.model.User
 import io.ktor.application.call
 import io.ktor.application.install
@@ -15,15 +17,36 @@ import io.ktor.routing.routing
 import io.ktor.serialization.serialization
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.lang.Exception
+import org.jetbrains.exposed.sql.transactions.transactionManager
+import java.sql.Connection
 
-fun main(args: Array<String>) {
-    Database.connect("jdbc:sqlite:.scrunchy/issues.db", driver = "org.sqlite.JDBC")
+fun main() {
+    val db = Database.connect("jdbc:sqlite:.scrunchy/issues.db", driver = "org.sqlite.JDBC")
+    db.transactionManager.defaultIsolationLevel =
+        Connection.TRANSACTION_SERIALIZABLE // Or
+//     Connection.TRANSACTION_READ_UNCOMMITTED
+    transaction(db) {
+        addLogger(StdOutSqlLogger)
+        SchemaUtils.create(RolesTable, UsersTable)
+        RolesTable.insertIgnore {
+            it[id] = System.currentTimeMillis()
+            it[name] = "owner"
+            it[title] = "Owner"
+        }
+        RolesTable.insertIgnore {
+            it[id] = System.currentTimeMillis()
+            it[name] = "admin"
+            it[title] = "Administrator"
+        }
+        RolesTable.insertIgnore {
+            it[id] = System.currentTimeMillis()
+            it[name] = "user"
+            it[title] = "User"
+        }
+    }
     val server = embeddedServer(Netty, port = 8080) {
         install(ContentNegotiation) {
             serialization()
@@ -31,29 +54,27 @@ fun main(args: Array<String>) {
         routing {
             post("/register") {
                 val user = registerUser(call.receiveParameters())
-                call.respond("")
+                call.respond(Json.stringify(BaseResponse.serializer(User.serializer()), BaseResponse.success(user)))
             }
             get("/") {
                 try {
                     call.respond(
-                        getUsers()
+                        getUsers(db)
                     )
-                }catch (e:Exception) {
+                } catch (e: Exception) {
+                    e.printStackTrace()
                     call.respond(
-                        BaseResponse(
-                            BaseResponse.ResponseType.ERROR,
-                            null,
-                            listOf(e.message?:"unknown error")
+//                        BaseResponse.serializer()
+                        CompletableResponse.error(
+                            listOf(e.message ?: "unknown error")
                         )
                     )
                 }
             }
             post("/login") {
                 call.respond(
-                    BaseResponse(
-                        BaseResponse.ResponseType.SUCCESS,
-                        User(1L,"dragos@mail.com", "Dragos", "Admin"),
-                        null
+                    BaseResponse.success(
+                        User(1L, "dragos@mail.com", "Dragos", "Admin")
                     )
                 )
             }
@@ -63,32 +84,30 @@ fun main(args: Array<String>) {
 }
 
 fun registerUser(parameters: Parameters) = transaction {
-    SchemaUtils.create(UsersTable)
     UsersTable.insert {
         it[id] = System.currentTimeMillis()
         it[name] = parameters["name"]!!//"Rachieru dragos"
         it[username] = parameters["username"]!!//"dragossusi"
         it[password] = parameters["password"]!!//"123456"
+        it[role] = RolesTable.select{ RolesTable.name eq "user"}.single()[RolesTable.id]
     }
 }.run {
     User(
         id = this get UsersTable.id,
         username = this get UsersTable.username,
         name = this get UsersTable.name,
-        role = "No role yet"
+        role = "user"
     )
 }
 
-fun getUsers() = transaction {
-    SchemaUtils.create(UsersTable)
-    UsersTable.selectAll()
-}.let{
-    it.map {
+fun getUsers(db: Database) = transaction(db) {
+    //    SchemaUtils.create(UsersTable)
+    (UsersTable innerJoin RolesTable).selectAll().limit(10).map {
         User(
             id = it[UsersTable.id],
             username = it[UsersTable.username],
             name = it[UsersTable.name],
-            role = "No role yet"
+            role = it[RolesTable.title]
         )
     }
 }

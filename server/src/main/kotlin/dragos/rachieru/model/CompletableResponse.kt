@@ -4,17 +4,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-class BaseResponse<T>(
+open class CompletableResponse(
     @SerialName("responseType")
     val responseType: ResponseType,
-    @SerialName("data")
-    val data: T?,
     @SerialName("errors")
     val errors: List<String>?
 ) {
 
     companion object {
-        fun <T> error(errors: List<String>?) = BaseResponse<T>(ResponseType.ERROR, null, errors)
-        fun <T> success(data: T) = BaseResponse(ResponseType.SUCCESS, data, null)
+        fun error(errors: List<String>?) = CompletableResponse(ResponseType.ERROR, errors)
+        fun success() = CompletableResponse(ResponseType.SUCCESS, null)
     }
+
 }
