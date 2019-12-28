@@ -2,16 +2,22 @@ package dragos.rachieru.routing
 
 import data.Project
 import dragos.rachieru.database.ProjectsTable
+import dragos.rachieru.database.RolesTable
 import dragos.rachieru.database.UsersTable
-import dragos.rachieru.mapper.toProject
 import dragos.rachieru.model.BaseResponse
+import dragos.rachieru.model.CompletableResponse
+import dragos.rachieru.model.User
 import io.ktor.application.call
+import io.ktor.http.Parameters
 import io.ktor.http.auth.parseAuthorizationHeader
+import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -34,19 +40,42 @@ import org.jetbrains.exposed.sql.transactions.transaction
  *
  */
 
-fun Route.routeProjects(){
+fun Route.routeProjects() {
     get("projects") {
-        val userId = 1L
-        val projects = transaction {
-            ProjectsTable.select {
-                UsersTable.id eq userId
-            }.limit(20).map{
-                it.toProject()
-            }
+        try {
+            val arrayProjects = getAllProject()
+            call.respond(
+                arrayProjects
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(
+                CompletableResponse.error(
+                    listOf(e.message ?: "unknown error")
+                )
+            )
         }
-//        call.respond(BaseResponse.serializer()) TODO
     }
     post("projects") {
+        call.respond(BaseResponse.success(insertProject(call.receiveParameters())))
+    }
+}
 
+fun getAllProject() = transaction{
+    ProjectsTable.selectAll().map {
+        Project(
+            _id = it[ProjectsTable.id],
+            name = it[ProjectsTable.name],
+            description = it[ProjectsTable.description],
+            creator_id = it[ProjectsTable.creatorId]
+        )
+    }
+}
+
+fun insertProject(parameters: Parameters) = transaction {
+    ProjectsTable.insert {
+        it[name] = parameters["name"]!!
+        it[description] = parameters["description"]!!
+        it[creatorId] = parameters["creatorId"]!!.toLong()
     }
 }

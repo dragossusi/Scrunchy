@@ -6,6 +6,7 @@ import dragos.rachieru.database.RolesTable
 import dragos.rachieru.database.UsersTable
 import dragos.rachieru.routing.routeAuth
 import dragos.rachieru.routing.routeIssues
+import dragos.rachieru.routing.routeProjects
 import dragos.rachieru.routing.routeUsers
 import io.ktor.application.install
 import io.ktor.auth.authenticate
@@ -52,6 +53,7 @@ fun main() {
         installAuth()
         routing {
             routeAuth()
+            routeProjects()
             authenticate(AUTH_USER) {
                 routeUsers()
                 routeIssues()

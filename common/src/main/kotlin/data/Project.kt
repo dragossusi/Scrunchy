@@ -4,9 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class Project(
-    val id: Long,
-    val name: String,
-    val description:String?,
-    val creator_id: Long
-) {
-}
+    var _id: Long,
+    var name: String,
+    var description:String?,
+    var creator_id: Long
+)

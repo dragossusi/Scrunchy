@@ -22,7 +22,7 @@ import org.jetbrains.exposed.sql.Table
  * along with Foobar.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-object ProjectsTable : Table("projects") {
+object ProjectsTable : Table("tProjects") {
 
     val id = long("_id")
     val name = varchar("name",20)

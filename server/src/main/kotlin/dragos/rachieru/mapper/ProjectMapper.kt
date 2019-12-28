@@ -24,11 +24,11 @@ import org.jetbrains.exposed.sql.ResultRow
  *
  */
 
-fun ResultRow.toProject(): Project {
-    return Project(
-        id = get(ProjectsTable.id),
-        name = get(ProjectsTable.name),
-        description = getOrNull(ProjectsTable.description),
-        creator_id = get(ProjectsTable.creatorId)
-    )
-}
+//fun ResultRow.toProject(): Project {
+////    return Project(
+////        _id = get(ProjectsTable.id),
+////        name = get(ProjectsTable.name),
+////        description = getOrNull(ProjectsTable.description),
+////        creator_id = get(ProjectsTable.creatorId)
+////    )
+//}
