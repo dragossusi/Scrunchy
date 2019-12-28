@@ -1,28 +1,26 @@
 package dragos.rachieru
 
+import dragos.rachieru.auth.AUTH_USER
+import dragos.rachieru.auth.installAuth
 import dragos.rachieru.database.RolesTable
 import dragos.rachieru.database.UsersTable
-import dragos.rachieru.model.BaseResponse
-import dragos.rachieru.model.CompletableResponse
-import dragos.rachieru.model.User
-import io.ktor.application.call
+import dragos.rachieru.routing.routeAuth
+import dragos.rachieru.routing.routeIssues
+import dragos.rachieru.routing.routeUsers
 import io.ktor.application.install
+import io.ktor.auth.authenticate
 import io.ktor.features.ContentNegotiation
-import io.ktor.http.Parameters
-import io.ktor.request.receiveParameters
-import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.serialization.serialization
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.UnstableDefault
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import java.sql.Connection
 
+@UnstableDefault
 fun main() {
     val db = Database.connect("jdbc:sqlite:.scrunchy/issues.db", driver = "org.sqlite.JDBC")
     db.transactionManager.defaultIsolationLevel =
@@ -51,63 +49,14 @@ fun main() {
         install(ContentNegotiation) {
             serialization()
         }
+        installAuth()
         routing {
-            post("/register") {
-                val user = registerUser(call.receiveParameters())
-                call.respond(Json.stringify(BaseResponse.serializer(User.serializer()), BaseResponse.success(user)))
-            }
-            get("/") {
-                try {
-                    call.respond(
-                        getUsers(db)
-                    )
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    call.respond(
-//                        BaseResponse.serializer()
-                        CompletableResponse.error(
-                            listOf(e.message ?: "unknown error")
-                        )
-                    )
-                }
-            }
-            post("/login") {
-                call.respond(
-                    BaseResponse.success(
-                        User(1L, "dragos@mail.com", "Dragos", "Admin")
-                    )
-                )
+            routeAuth()
+            authenticate(AUTH_USER) {
+                routeUsers()
+                routeIssues()
             }
         }
     }
     server.start(wait = true)
-}
-
-fun registerUser(parameters: Parameters) = transaction {
-    UsersTable.insert {
-        it[id] = System.currentTimeMillis()
-        it[name] = parameters["name"]!!//"Rachieru dragos"
-        it[username] = parameters["username"]!!//"dragossusi"
-        it[password] = parameters["password"]!!//"123456"
-        it[role] = RolesTable.select{ RolesTable.name eq "user"}.single()[RolesTable.id]
-    }
-}.run {
-    User(
-        id = this get UsersTable.id,
-        username = this get UsersTable.username,
-        name = this get UsersTable.name,
-        role = "user"
-    )
-}
-
-fun getUsers(db: Database) = transaction(db) {
-    //    SchemaUtils.create(UsersTable)
-    (UsersTable innerJoin RolesTable).selectAll().limit(10).map {
-        User(
-            id = it[UsersTable.id],
-            username = it[UsersTable.username],
-            name = it[UsersTable.name],
-            role = it[RolesTable.title]
-        )
-    }
 }
