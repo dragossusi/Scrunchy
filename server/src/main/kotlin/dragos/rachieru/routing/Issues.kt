@@ -1,7 +1,9 @@
 package dragos.rachieru.routing
 
-import dragos.rachieru.model.BaseResponse
-import dragos.rachieru.model.User
+import dragos.rachieru.auth.user
+import dragos.rachieru.database.IssuesTable
+import dragos.rachieru.mapper.toIssue
+import dragos.rachieru.model.*
 import io.ktor.application.call
 import io.ktor.request.receiveParameters
 import io.ktor.response.respond
@@ -9,6 +11,8 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
  * Scrunchy
@@ -33,8 +37,21 @@ import kotlinx.serialization.json.Json
 fun Route.routeIssues() {
 
     get("/issues/{project_id}") {
+        val user = call.user
+        val limit = call.request.queryParameters["limit"]?.toInt()?:10
+        val issues = transaction {
+            IssuesTable.select {
+                IssuesTable.projectId eq call.parameters["project_id"]!!.toLong()
+            }.limit(limit).map {
+                it.toIssue()
+            }
+        }
+        call.respond(
+                ListResponse.success(issues, PaginationResponse(limit,0))
+        )
     }
-    post("/issues") {
+    post("/issues/{project_id}") {
+
         call.respond(
             BaseResponse.success(
                 User(1L, "dragos@mail.com", "Dragos", "Admin")
