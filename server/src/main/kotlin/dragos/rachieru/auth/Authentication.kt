@@ -1,10 +1,14 @@
 package dragos.rachieru.auth
 
+import dragos.rachieru.database.RolesTable
+import dragos.rachieru.database.UsersTable
+import dragos.rachieru.mapper.toUser
 import io.ktor.application.Application
-import io.ktor.auth.Authentication
 import io.ktor.application.install
-import io.ktor.auth.UserIdPrincipal
-import io.ktor.auth.basic
+import io.ktor.auth.Authentication
+import io.ktor.auth.jwt.jwt
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
  * Scrunchy
@@ -16,29 +20,37 @@ import io.ktor.auth.basic
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Scrunchy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see [License](http://www.gnu.org/licenses/) .
+ * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
 
+
 fun Application.installAuth() {
     install(Authentication) {
-        basic(name = AUTH_USER) {
-            realm = "Ktor Server"
-            validate { credentials ->
-                if (credentials.name == credentials.password) {
-                    UserIdPrincipal(credentials.name)
-                } else {
-                    null
+        jwt {
+            realm = "scrunchy"
+            verifier {
+                JwtConfig.verifier
+            }
+            validate {
+                val id = it.payload.getClaim("id")?.asLong()
+                id?.let {
+                    transaction {
+                        (UsersTable innerJoin RolesTable).select {
+                            UsersTable.id eq it
+                        }.single().toUser()
+                    }
                 }
             }
         }
     }
 }
+
 
 const val AUTH_USER = "userauth"

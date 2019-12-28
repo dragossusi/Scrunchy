@@ -1,19 +1,23 @@
 package dragos.rachieru.routing
 
+import dragos.rachieru.auth.JwtConfig
 import dragos.rachieru.database.RolesTable
 import dragos.rachieru.database.UsersTable
+import dragos.rachieru.mapper.toUser
 import dragos.rachieru.model.BaseResponse
+import dragos.rachieru.model.CompletableResponse
 import dragos.rachieru.model.User
 import io.ktor.application.call
 import io.ktor.http.Parameters
 import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.Routing
 import io.ktor.routing.post
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.insert
+import kotlinx.serialization.serializer
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -27,13 +31,13 @@ import org.jetbrains.exposed.sql.transactions.transaction
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Scrunchy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see [License](http://www.gnu.org/licenses/) .
+ * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
 
@@ -41,19 +45,32 @@ import org.jetbrains.exposed.sql.transactions.transaction
 fun Route.routeAuth() {
     post("/register") {
         val user = registerUser(call.receiveParameters())
-        call.respond(Json.stringify(BaseResponse.serializer(User.serializer()), BaseResponse.success(user)))
+        user?.let {
+            call.respond(Json.stringify(BaseResponse.serializer(User.serializer()), BaseResponse.success(it)))
+        } ?: call.respond(CompletableResponse.error(listOf("cant register")))
     }
     post("/login") {
+        val params = call.parameters
+        val userName = params["username"]!!
+        val password = params["password"]!!
+        val user = transaction {
+            (UsersTable innerJoin RolesTable).select {
+                (UsersTable.username eq userName) and (UsersTable.password eq password)
+            }.single().toUser()
+        }
         call.respond(
-            BaseResponse.success(
-                User(1L, "dragos@mail.com", "Dragos", "Admin")
+            Json.stringify(
+                BaseResponse.serializer(String.serializer()),
+                BaseResponse.success(
+                    JwtConfig.makeToken(user)
+                )
             )
         )
     }
 }
 
-fun registerUser(parameters: Parameters) = transaction {
-    UsersTable.insert {
+fun registerUser(parameters: Parameters): User? = transaction {
+    UsersTable.insertIgnore {
         it[id] = System.currentTimeMillis()
         it[name] = parameters["name"]!!//"Rachieru dragos"
         it[username] = parameters["username"]!!//"dragossusi"
@@ -61,7 +78,8 @@ fun registerUser(parameters: Parameters) = transaction {
         it[role] = RolesTable.select { RolesTable.name eq "user" }.single()[RolesTable.id]
     }
 }.run {
-    User(
+    if (this.isIgnore) null
+    else User(
         id = this get UsersTable.id,
         username = this get UsersTable.username,
         name = this get UsersTable.name,

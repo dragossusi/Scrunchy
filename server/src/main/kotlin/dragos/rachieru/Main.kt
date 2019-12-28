@@ -1,7 +1,8 @@
 package dragos.rachieru
 
-import dragos.rachieru.auth.AUTH_USER
 import dragos.rachieru.auth.installAuth
+import dragos.rachieru.database.IssuesTable
+import dragos.rachieru.database.ProjectsTable
 import dragos.rachieru.database.RolesTable
 import dragos.rachieru.database.UsersTable
 import dragos.rachieru.routing.routeAuth
@@ -23,13 +24,15 @@ import java.sql.Connection
 
 @UnstableDefault
 fun main() {
-    val db = Database.connect("jdbc:sqlite:.scrunchy/issues.db", driver = "org.sqlite.JDBC")
+//    val db = Database.connect("jdbc:sqlite:.scrunchy/issues.db", driver = "org.sqlite.JDBC")
+    val db = Database.connect("jdbc:mysql://marinescu.xyz:3306/scrunchy", driver = "com.mysql.cj.jdbc.Driver",
+        user = "dragos",password = "Dragos!@#$")
     db.transactionManager.defaultIsolationLevel =
         Connection.TRANSACTION_SERIALIZABLE // Or
 //     Connection.TRANSACTION_READ_UNCOMMITTED
     transaction(db) {
         addLogger(StdOutSqlLogger)
-        SchemaUtils.create(RolesTable, UsersTable)
+        SchemaUtils.create(RolesTable, UsersTable,ProjectsTable,IssuesTable)
         RolesTable.insertIgnore {
             it[id] = System.currentTimeMillis()
             it[name] = "owner"
@@ -53,9 +56,9 @@ fun main() {
         installAuth()
         routing {
             routeAuth()
-            routeProjects()
-            authenticate(AUTH_USER) {
+            authenticate {
                 routeUsers()
+                routeProjects()
                 routeIssues()
             }
         }

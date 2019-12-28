@@ -1,8 +1,6 @@
-package dragos.rachieru.mapper
+package dragos.rachieru.model
 
-import dragos.rachieru.database.ProjectsTable
-import dragos.rachieru.model.Project
-import org.jetbrains.exposed.sql.ResultRow
+import kotlinx.serialization.Serializable
 
 /**
  * Scrunchy
@@ -23,12 +21,8 @@ import org.jetbrains.exposed.sql.ResultRow
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-
-fun ResultRow.toProject(): Project {
-    return Project(
-        id = get(ProjectsTable.id),
-        name = get(ProjectsTable.name),
-        description = getOrNull(ProjectsTable.description),
-        creatorId = get(ProjectsTable.creatorId)
-    )
-}
+@Serializable
+class PaginationResponse(
+    val limit: Int,
+    val lastId: Long
+)

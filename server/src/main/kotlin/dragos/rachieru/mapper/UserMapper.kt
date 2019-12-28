@@ -1,7 +1,8 @@
 package dragos.rachieru.mapper
 
-import dragos.rachieru.database.ProjectsTable
-import dragos.rachieru.model.Project
+import dragos.rachieru.database.RolesTable
+import dragos.rachieru.database.UsersTable
+import dragos.rachieru.model.User
 import org.jetbrains.exposed.sql.ResultRow
 
 /**
@@ -24,11 +25,9 @@ import org.jetbrains.exposed.sql.ResultRow
  *
  */
 
-fun ResultRow.toProject(): Project {
-    return Project(
-        id = get(ProjectsTable.id),
-        name = get(ProjectsTable.name),
-        description = getOrNull(ProjectsTable.description),
-        creatorId = get(ProjectsTable.creatorId)
-    )
-}
+fun ResultRow.toUser() = User(
+    id = this[UsersTable.id],
+    username = this[UsersTable.username],
+    name = this[UsersTable.name],
+    role = this[RolesTable.title]
+)

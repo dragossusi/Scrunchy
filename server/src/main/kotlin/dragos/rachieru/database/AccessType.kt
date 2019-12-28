@@ -10,13 +10,13 @@ package dragos.rachieru.database
  * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Scrunchy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see [License](http://www.gnu.org/licenses/) .
+ * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
 enum class AccessType(val char:Char) {
