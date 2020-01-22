@@ -1,8 +1,6 @@
-package api
+package data
 
-import javafx.beans.property.SimpleStringProperty
-import tornadofx.*
-import javax.json.JsonObject
+import data.definition.Failable
 
 /**
  * Scrunchy
@@ -23,26 +21,6 @@ import javax.json.JsonObject
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-class LoginRequest(username:String,password:String) : JsonModel {
-
-    val usernameProperty = SimpleStringProperty(username)
-    var username by usernameProperty
-
-    val passwordProperty = SimpleStringProperty(password)
-    var password by passwordProperty
-
-    override fun updateModel(json: JsonObject) {
-        with(json) {
-            username = string("username")
-            password = string("password")
-        }
-    }
-
-    override fun toJSON(json: JsonBuilder) {
-        with(json) {
-            add("username", username)
-            add("password", password)
-        }
-    }
-
+interface DataResponse<T>:CompletableResponse {
+    val data: T?
 }

@@ -29,6 +29,7 @@ class LoginController : Controller() {
                 }
                 showMainView()
             } else {
+                println("nu merse!")
                 TODO()
             }
         }

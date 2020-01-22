@@ -1,8 +1,8 @@
-package api
+package io.scrunchy.server.model
 
-import javafx.beans.property.SimpleStringProperty
-import tornadofx.*
-import javax.json.JsonObject
+import io.ktor.auth.Principal
+import io.scrunchy.common.AppRole
+import io.scrunchy.common.User
 
 /**
  * Scrunchy
@@ -23,26 +23,10 @@ import javax.json.JsonObject
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-class LoginRequest(username:String,password:String) : JsonModel {
-
-    val usernameProperty = SimpleStringProperty(username)
-    var username by usernameProperty
-
-    val passwordProperty = SimpleStringProperty(password)
-    var password by passwordProperty
-
-    override fun updateModel(json: JsonObject) {
-        with(json) {
-            username = string("username")
-            password = string("password")
-        }
-    }
-
-    override fun toJSON(json: JsonBuilder) {
-        with(json) {
-            add("username", username)
-            add("password", password)
-        }
-    }
-
+class UserPrincipal(
+    userId: Long,
+    username: String,
+    name: String,
+    role: AppRole
+) : User(userId, username, name, role), Principal {
 }

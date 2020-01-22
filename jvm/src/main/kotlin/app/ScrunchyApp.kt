@@ -8,7 +8,7 @@ class ScrunchyApp : App(LoginView::class) {
     val api: Rest by inject()
 
     init {
-        api.baseURI = "http://teamp.go.ro:8080"
+        api.baseURI = "http://localhost:8080"
 //        api.engine.requestInterceptor = {
 //
 //        }

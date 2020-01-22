@@ -1,8 +1,8 @@
-package api
+package io.scrunchy.common
 
-import javafx.beans.property.SimpleStringProperty
-import tornadofx.*
-import javax.json.JsonObject
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import data.AppRoleData
 
 /**
  * Scrunchy
@@ -23,26 +23,13 @@ import javax.json.JsonObject
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-class LoginRequest(username:String,password:String) : JsonModel {
-
-    val usernameProperty = SimpleStringProperty(username)
-    var username by usernameProperty
-
-    val passwordProperty = SimpleStringProperty(password)
-    var password by passwordProperty
-
-    override fun updateModel(json: JsonObject) {
-        with(json) {
-            username = string("username")
-            password = string("password")
-        }
-    }
-
-    override fun toJSON(json: JsonBuilder) {
-        with(json) {
-            add("username", username)
-            add("password", password)
-        }
-    }
-
+@JsonClass(generateAdapter = true)
+class AppRole(
+    @Json(name="role_id")
+    override val roleId: Long,
+    @Json(name="name")
+    override val name: String,
+    @Json(name="title")
+    override val title: String
+) : AppRoleData {
 }
