@@ -1,5 +1,6 @@
 package dragos.rachieru.database
 
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.Table
 
 
@@ -22,14 +23,10 @@ import org.jetbrains.exposed.sql.Table
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-object ProjectsTable : Table("projects") {
+object ProjectsTable : LongIdTable("projects","_id") {
 
-    val id = long("_id")
     val name = varchar("name",20)
     val description = varchar("description",100).nullable()
-    val creatorId= long("creator_id") references UsersTable.id
-
-    override val primaryKey: PrimaryKey?
-        get() = PrimaryKey(id)
+    val creator= reference("creator_id",UsersTable)
 
 }

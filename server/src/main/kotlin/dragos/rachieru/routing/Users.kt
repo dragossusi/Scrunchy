@@ -1,14 +1,11 @@
 package dragos.rachieru.routing
 
-import dragos.rachieru.database.RolesTable
-import dragos.rachieru.database.UsersTable
-import dragos.rachieru.mapper.toUser
+import dragos.rachieru.entity.UserEntity
 import dragos.rachieru.model.CompletableResponse
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -51,7 +48,7 @@ fun Route.routeUsers() {
 
 fun getUsers() = transaction {
     //    SchemaUtils.create(UsersTable)
-    (UsersTable innerJoin RolesTable).selectAll().limit(10).map {
+    UserEntity.all().limit(10).map {
         it.toUser()
     }
 }

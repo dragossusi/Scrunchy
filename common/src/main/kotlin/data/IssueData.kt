@@ -3,12 +3,12 @@ package data
 import io.ktor.util.date.GMTDate
 
 interface IssueData {
-    val id: Long
-    val projectId:Long
-    val userId: Long
-    val status: Status
-    val createdAt: GMTDate
-    var updatedAt: GMTDate
+    val issueId: Long
+    val project: ProjectData
+    val creator: UserData
+    val status: String
+    val createdAt: Long
+    var updatedAt: Long?
     var title: String
     var content: String
 

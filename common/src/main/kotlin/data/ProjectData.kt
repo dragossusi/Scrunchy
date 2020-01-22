@@ -1,8 +1,8 @@
 package data
 
 interface ProjectData {
-    val id:Long
+    val projectId:Long
     val name:String
     val description:String?
-    val creatorId:Long
+    val creator:UserData
 }

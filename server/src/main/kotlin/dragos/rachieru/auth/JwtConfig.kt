@@ -41,7 +41,7 @@ object JwtConfig {
     fun makeToken(user: UserData): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(issuer)
-        .withClaim("id", user.id)
+        .withClaim("id", user.userId)
         .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
         .sign(algorithm)
 

@@ -1,6 +1,8 @@
 package dragos.rachieru.model
 
 import data.IssueData
+import data.ProjectData
+import data.UserData
 import io.ktor.util.date.GMTDate
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Serializable
@@ -26,14 +28,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 class Issue(
-    override val id: Long,
-    override val projectId: Long,
-    override val userId: Long,
-    override val status: IssueData.Status,
-    @ContextualSerialization
-    override val createdAt: GMTDate,
-    @ContextualSerialization
-    override var updatedAt: GMTDate,
+    override val issueId: Long,
+    override val project: ProjectData,
+    override val creator: UserData,
+    override val status: String,
+    override val createdAt: Long,
+    override var updatedAt: Long?,
     override var title: String,
     override var content: String
 ) : IssueData {

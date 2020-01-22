@@ -1,7 +1,9 @@
 package dragos.rachieru.routing
 
+import dragos.rachieru.auth.user
 import dragos.rachieru.database.ProjectsTable
-import dragos.rachieru.mapper.toProject
+import dragos.rachieru.entity.ProjectEntity
+import dragos.rachieru.entity.UserEntity
 import dragos.rachieru.model.*
 import io.ktor.application.call
 import io.ktor.auth.principal
@@ -12,10 +14,9 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.routing.route
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -40,41 +41,46 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 @UnstableDefault
 fun Route.routeProjects() {
-    get("projects") {
-        try {
-            val user = call.principal<User>()!!
-            val queries = call.request.queryParameters
-            val limit = queries["limit"]?.toInt() ?: 10
-            val lastId = queries["last_id"]?.toLong() ?: 0L
-            val arrayProjects = getMyProjects(
-                limit,
-                lastId,
-                user.id
-            )
+    route("projects") {
+        get {
+            try {
+                val user = call.principal<User>()!!
+                val queries = call.request.queryParameters
+                val limit = queries["limit"]?.toInt() ?: 10
+                val lastId = queries["last_id"]?.toLong() ?: 0L
+                val arrayProjects = getMyProjects(
+                    limit,
+                    lastId,
+                    user.userId
+                ).toList().map {
+                    it.toProject()
+                }
+                call.respond(
+                    Json.stringify(
+                        ListResponse.serializer(Project.serializer()),
+                        ListResponse.success(arrayProjects, pagination = PaginationResponse(limit, lastId))
+                    )
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    CompletableResponse.error(
+                        listOf(e.message ?: "unknown error")
+                    )
+                )
+            }
+        }
+        post {
+            val user = call.user!!
             call.respond(
                 Json.stringify(
-                    ListResponse.serializer(Project.serializer()),
-                    ListResponse.success(arrayProjects, pagination = PaginationResponse(limit, lastId))
-                )
-            )
-        } catch (e: Exception) {
-            e.printStackTrace()
-            call.respond(
-                HttpStatusCode.BadRequest,
-                CompletableResponse.error(
-                    listOf(e.message ?: "unknown error")
+                    BaseResponse.serializer(Project.serializer()),
+                    BaseResponse.success(insertProject(user, call.receiveParameters()).toProject())
                 )
             )
         }
-    }
-    post("projects") {
-        val user = call.principal<User>()!!
-        call.respond(
-            Json.stringify(
-                BaseResponse.serializer(Project.serializer()),
-                BaseResponse.success(insertProject(user.id, call.receiveParameters()))
-            )
-        )
+        routeIssues()
     }
 }
 
@@ -83,28 +89,18 @@ fun getMyProjects(
     lastId: Long,
     creatorId: Long
 ) = transaction {
-    ProjectsTable.select {
-        ProjectsTable.creatorId eq creatorId
+    ProjectEntity.find {
+        ProjectsTable.creator eq creatorId
         ProjectsTable.id greater lastId
     }
         .limit(limit)
-        .map {
-            it.toProject()
-        }
+        .toList()
 }
 
-fun insertProject(userId: Long, parameters: Parameters) = transaction {
-    val project = Project(
-        id = System.currentTimeMillis(),
-        name = parameters["name"]!!,
-        description = parameters["description"]!!,
-        creatorId = userId
-    )
-    ProjectsTable.insert {
-        it[id] = System.currentTimeMillis()
-        it[name] = project.name
-        it[description] = project.description
-        it[creatorId] = userId
+fun insertProject(user: UserEntity, parameters: Parameters) = transaction {
+    ProjectEntity.new {
+        name = parameters["name"]!!
+        description = parameters["description"]!!
+        creator = user
     }
-    project
 }

@@ -1,16 +1,12 @@
 package dragos.rachieru.auth
 
-import dragos.rachieru.database.RolesTable
-import dragos.rachieru.database.UsersTable
-import dragos.rachieru.mapper.toUser
-import dragos.rachieru.model.User
+import dragos.rachieru.entity.UserEntity
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -45,9 +41,7 @@ fun Application.installAuth() {
                 val id = it.payload.getClaim("id")?.asLong()
                 id?.let {
                     transaction {
-                        (UsersTable innerJoin RolesTable).select {
-                            UsersTable.id eq it
-                        }.single().toUser()
+                        UserEntity.findById(it)
                     }
                 }
             }
@@ -56,7 +50,7 @@ fun Application.installAuth() {
 }
 
 val ApplicationCall.user
-    get() = principal<User>()
+    get() = principal<UserEntity>()
 
 
 const val AUTH_USER = "userauth"

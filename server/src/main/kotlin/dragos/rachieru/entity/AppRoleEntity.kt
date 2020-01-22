@@ -1,9 +1,11 @@
-package dragos.rachieru.mapper
+package dragos.rachieru.entity
 
-import dragos.rachieru.database.RolesTable
-import dragos.rachieru.database.UsersTable
-import dragos.rachieru.model.User
-import org.jetbrains.exposed.sql.ResultRow
+import data.AppRoleData
+import dragos.rachieru.database.AppRolesTable
+import dragos.rachieru.model.AppRole
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
 
 /**
  * Scrunchy
@@ -24,10 +26,16 @@ import org.jetbrains.exposed.sql.ResultRow
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
+class AppRoleEntity(id: EntityID<Long>) : LongEntity(id), AppRoleData {
 
-fun ResultRow.toUser() = User(
-    id = this[UsersTable.id],
-    username = this[UsersTable.username],
-    name = this[UsersTable.name],
-    role = this[RolesTable.title]
-)
+    override val roleId: Long
+        get() = id.value
+    override var name: String by AppRolesTable.name
+    override var title: String by AppRolesTable.title
+
+    companion object AppRoleDao : LongEntityClass<AppRoleEntity>(AppRolesTable)
+
+
+    fun toAppRole() = AppRole(roleId, name, title)
+
+}

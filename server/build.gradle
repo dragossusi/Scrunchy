@@ -1,36 +1,9 @@
 apply plugin: 'kotlin-platform-jvm'
 
-//apply plugin: 'application'
-
-repositories {
-    mavenCentral()
-}
-
-//apply plugin: 'kotlin-platform-jvm'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlinx-serialization'
 
 apply plugin: 'maven-publish'
-
-//kotlin {
-//    jvm("server") {
-//
-//    }
-//    sourceSets {
-//        serverMain {
-//            dependencies {
-////                api 'com.google.dagger:dagger:2.x'
-////                kapt 'com.google.dagger:dagger-compiler:2.x'
-//            }
-//        }
-//        serverTest {
-//            dependencies {
-//                implementation kotlin('test')
-//                implementation kotlin('test-junit')
-//            }
-//        }
-//    }
-//}
 
 dependencies {
     implementation project(":common-jvm")

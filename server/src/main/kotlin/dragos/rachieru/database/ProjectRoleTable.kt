@@ -1,6 +1,5 @@
 package dragos.rachieru.database
 
-import dragos.rachieru.database.RolesTable.uniqueIndex
 import org.jetbrains.exposed.sql.Table
 
 /**

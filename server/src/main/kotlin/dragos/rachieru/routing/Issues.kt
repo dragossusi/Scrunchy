@@ -2,16 +2,16 @@ package dragos.rachieru.routing
 
 import dragos.rachieru.auth.user
 import dragos.rachieru.database.IssuesTable
-import dragos.rachieru.mapper.toIssue
-import dragos.rachieru.model.*
+import dragos.rachieru.entity.IssueEntity
+import dragos.rachieru.model.BaseResponse
+import dragos.rachieru.model.ListResponse
+import dragos.rachieru.model.PaginationResponse
 import io.ktor.application.call
-import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
-import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.select
+import io.ktor.routing.route
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -35,27 +35,33 @@ import org.jetbrains.exposed.sql.transactions.transaction
  */
 
 fun Route.routeIssues() {
-
-    get("/issues/{project_id}") {
-        val user = call.user
-        val limit = call.request.queryParameters["limit"]?.toInt()?:10
-        val issues = transaction {
-            IssuesTable.select {
-                IssuesTable.projectId eq call.parameters["project_id"]!!.toLong()
-            }.limit(limit).map {
-                it.toIssue()
+    route("{project_id}/issues") {
+        get {
+            val user = call.user!!
+            val limit = call.request.queryParameters["limit"]?.toInt() ?: 10
+            val issues = transaction {
+                IssueEntity.find {
+                    IssuesTable.project eq call.parameters["project_id"]!!.toLong()
+                }.toList()
             }
-        }
-        call.respond(
-                ListResponse.success(issues, PaginationResponse(limit,0))
-        )
-    }
-    post("/issues/{project_id}") {
-
-        call.respond(
-            BaseResponse.success(
-                User(1L, "dragos@mail.com", "Dragos", "Admin")
+            call.respond(
+                ListResponse.success(issues, PaginationResponse(limit, 0))
             )
-        )
+        }
+        post {
+            val user = call.user!!
+            val issue = transaction {
+                IssueEntity.new {
+                    updatedAt = null
+                    createdAt = System.currentTimeMillis()
+                    creator = user
+                }
+            }
+            call.respond(
+                BaseResponse.success(
+                    issue
+                )
+            )
+        }
     }
 }

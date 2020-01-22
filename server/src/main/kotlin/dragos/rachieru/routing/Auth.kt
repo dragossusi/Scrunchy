@@ -1,9 +1,10 @@
 package dragos.rachieru.routing
 
 import dragos.rachieru.auth.JwtConfig
-import dragos.rachieru.database.RolesTable
+import dragos.rachieru.database.AppRolesTable
 import dragos.rachieru.database.UsersTable
-import dragos.rachieru.mapper.toUser
+import dragos.rachieru.entity.AppRoleEntity
+import dragos.rachieru.entity.UserEntity
 import dragos.rachieru.model.BaseResponse
 import dragos.rachieru.model.CompletableResponse
 import dragos.rachieru.model.User
@@ -17,8 +18,6 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -54,10 +53,11 @@ fun Route.routeAuth() {
         val userName = params["username"]!!
         val password = params["password"]!!
         val user = transaction {
-            (UsersTable innerJoin RolesTable).select {
+            UserEntity.find {
                 (UsersTable.username eq userName) and (UsersTable.password eq password)
-            }.single().toUser()
+            }.single()
         }
+
         call.respond(
             Json.stringify(
                 BaseResponse.serializer(String.serializer()),
@@ -70,19 +70,10 @@ fun Route.routeAuth() {
 }
 
 fun registerUser(parameters: Parameters): User? = transaction {
-    UsersTable.insertIgnore {
-        it[id] = System.currentTimeMillis()
-        it[name] = parameters["name"]!!//"Rachieru dragos"
-        it[username] = parameters["username"]!!//"dragossusi"
-        it[password] = parameters["password"]!!//"123456"
-        it[role] = RolesTable.select { RolesTable.name eq "user" }.single()[RolesTable.id]
-    }
-}.run {
-    if (this.isIgnore) null
-    else User(
-        id = this get UsersTable.id,
-        username = this get UsersTable.username,
-        name = this get UsersTable.name,
-        role = "user"
-    )
+    UserEntity.new {
+        name = parameters["name"]!!//"Rachieru dragos"
+        username = parameters["username"]!!//"dragossusi"
+        password = parameters["password"]!!//"123456"
+        role = AppRoleEntity.find { AppRolesTable.name eq "user" }.single()
+    }.toUser()
 }

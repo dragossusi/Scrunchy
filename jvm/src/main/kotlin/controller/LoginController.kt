@@ -1,19 +1,23 @@
 package controller
 
+import api.LoginRequest
 import tornadofx.Controller
+import tornadofx.Rest
 import view.LoginView
 import view.MainView
 
 class LoginController : Controller() {
+
+    val api: Rest by inject()
 
     val loginView: LoginView by inject()
     val mainView: MainView by inject()
 
     fun tryLogin(username: String, password: String, remember: Boolean) {
         runAsync {
-            username == "dragos@mail.com" && password == "123456"
-        } ui { successfulLogin ->
-            if (successfulLogin) {
+            api.post("login",LoginRequest(username,password))
+        } ui { response ->
+            if (response.ok()) {
                 loginView.clear()
 
                 if (remember) {

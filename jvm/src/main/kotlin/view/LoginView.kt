@@ -11,7 +11,7 @@ class LoginView : View() {
 
     override val root = form {
         fieldset {
-            field("Email") {
+            field("Username") {
                 textfield(loginModel.username) {
 
                 }

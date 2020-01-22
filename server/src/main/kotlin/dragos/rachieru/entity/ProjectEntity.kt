@@ -1,8 +1,11 @@
-package dragos.rachieru.model
+package dragos.rachieru.entity
 
 import data.ProjectData
-import data.UserData
-import kotlinx.serialization.Serializable
+import dragos.rachieru.database.ProjectsTable
+import dragos.rachieru.model.Project
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
 
 /**
  * Scrunchy
@@ -23,11 +26,18 @@ import kotlinx.serialization.Serializable
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-@Serializable
-class Project(
-    override val projectId: Long,
-    override val name: String,
-    override val description: String?,
-    override val creator: UserData
-) : ProjectData {
+class ProjectEntity(id: EntityID<Long>) : LongEntity(id), ProjectData {
+
+    override val projectId: Long
+        get() = id.value
+    override var name: String by ProjectsTable.name
+    override var description: String? by ProjectsTable.description
+    override var creator by UserEntity referencedOn ProjectsTable.creator
+
+    fun toProject() = Project(
+        projectId, name, description, creator
+    )
+
+    companion object ProjectDao : LongEntityClass<ProjectEntity>(ProjectsTable)
+
 }

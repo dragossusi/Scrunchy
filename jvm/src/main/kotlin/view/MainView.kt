@@ -1,12 +1,11 @@
 package view
 
-import data.Project
-import javafx.beans.property.SimpleObjectProperty
+import data.ProjectData
 import tornadofx.*
 
 class MainView : View() {
 
-    val projects = mutableListOf<Project>().asObservable()
+    val projects = mutableListOf<ProjectData>().asObservable()
 
     override val root = hbox {
         vbox {
