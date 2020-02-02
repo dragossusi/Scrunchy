@@ -2,6 +2,7 @@ package io.scrunchy.server.routing
 
 import com.squareup.moshi.Moshi
 import io.ktor.application.call
+import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -51,8 +52,11 @@ fun Route.routeIssues(moshi: Moshi) {
         }
         post {
             val user = call.user!!
+            val params = call.receiveParameters()
             val issue = transaction {
                 IssueEntity.new {
+                    title = params["title"]!!
+                    content = params["content"]!!
                     updatedAt = null
                     createdAt = System.currentTimeMillis()
                     creator = user
