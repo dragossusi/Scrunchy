@@ -1,17 +1,18 @@
 package io.scrunchy.server.routing
 
-import io.scrunchy.server.auth.user
-import io.scrunchy.server.database.IssuesTable
-import io.scrunchy.server.entity.IssueEntity
-import io.scrunchy.common.BaseDataResponse
-import io.scrunchy.common.ListResponse
-import io.scrunchy.common.PaginationResponse
+import com.squareup.moshi.Moshi
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import io.scrunchy.common.PaginationResponse
+import io.scrunchy.server.auth.user
+import io.scrunchy.server.database.IssuesTable
+import io.scrunchy.server.entity.IssueEntity
+import io.scrunchy.server.moshi.dataResponse
+import io.scrunchy.server.moshi.listDataResponse
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -34,7 +35,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
  *
  */
 
-fun Route.routeIssues() {
+fun Route.routeIssues(moshi: Moshi) {
     route("{project_id}/issues") {
         get {
             val user = call.user!!
@@ -45,7 +46,7 @@ fun Route.routeIssues() {
                 }.toList()
             }
             call.respond(
-                ListResponse.success(issues, PaginationResponse(limit, 0))
+                moshi.listDataResponse(issues, PaginationResponse(limit, 0))
             )
         }
         post {
@@ -58,7 +59,7 @@ fun Route.routeIssues() {
                 }
             }
             call.respond(
-                BaseDataResponse.success(
+                moshi.dataResponse(
                     issue
                 )
             )

@@ -1,4 +1,4 @@
-package viewmodel
+package io.scrunchy.desktop.viewmodel
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty

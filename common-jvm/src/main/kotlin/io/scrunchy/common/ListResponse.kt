@@ -22,13 +22,13 @@ import com.squareup.moshi.JsonClass
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-@JsonClass(generateAdapter = true)
+@JsonClass(generateAdapter = false)
 class ListResponse<T>(
     @Json(name = "response_type")
     responseType: ResponseType,
     @Json(name = "data")
     data: List<T>?,
-    @Json(name="pagination")
+    @Json(name = "pagination")
     val pagination: PaginationResponse?,
     @Json(name = "errors")
     errors: List<String>?
@@ -37,6 +37,7 @@ class ListResponse<T>(
     companion object {
         fun <T> error(errors: List<String>?) =
             ListResponse<T>(ResponseType.ERROR, null, null, errors)
+
         fun <T> success(data: List<T>, pagination: PaginationResponse) =
             ListResponse(ResponseType.SUCCESS, data, pagination, null)
     }

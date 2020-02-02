@@ -1,11 +1,14 @@
 package io.scrunchy.server.routing
 
-import io.scrunchy.server.entity.UserEntity
-import io.scrunchy.common.BaseCompletableResponse
+import com.squareup.moshi.Moshi
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import io.scrunchy.common.PaginationResponse
+import io.scrunchy.server.entity.UserEntity
+import io.scrunchy.server.moshi.errorResponse
+import io.scrunchy.server.moshi.listDataResponse
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -28,17 +31,19 @@ import org.jetbrains.exposed.sql.transactions.transaction
  *
  */
 
-fun Route.routeUsers() {
+fun Route.routeUsers(moshi: Moshi) {
     get("/users") {
         try {
             call.respond(
-                getUsers()
+                moshi.listDataResponse(
+                    getUsers(),
+                    PaginationResponse(10,0)
+                )
             )
         } catch (e: Exception) {
             e.printStackTrace()
             call.respond(
-//                        BaseResponse.serializer()
-                BaseCompletableResponse.error(
+                moshi.errorResponse(
                     listOf(e.message ?: "unknown error")
                 )
             )

@@ -1,23 +1,26 @@
-package controller
+package io.scrunchy.desktop.controller
 
-import api.LoginRequest
+import io.scrunchy.desktop.api.Auth
+import io.scrunchy.desktop.view.LoginView
+import io.scrunchy.desktop.view.MainView
+import kotlinx.coroutines.runBlocking
 import tornadofx.Controller
-import tornadofx.Rest
-import view.LoginView
-import view.MainView
+import tornadofx.FX
 
 class LoginController : Controller() {
 
-    val api: Rest by inject()
+    val api: Auth = FX.getComponents().get(Auth::class) as Auth
 
     val loginView: LoginView by inject()
     val mainView: MainView by inject()
 
     fun tryLogin(username: String, password: String, remember: Boolean) {
         runAsync {
-            api.post("login",LoginRequest(username,password))
+            runBlocking {
+                api.login(username, password)
+            }
         } ui { response ->
-            if (response.ok()) {
+            if (response.isSuccessful) {
                 loginView.clear()
 
                 if (remember) {

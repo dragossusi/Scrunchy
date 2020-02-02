@@ -1,8 +1,8 @@
-package view
+package io.scrunchy.desktop.view
 
-import controller.LoginController
+import io.scrunchy.desktop.controller.LoginController
 import tornadofx.*
-import viewmodel.LoginViewModel
+import io.scrunchy.desktop.viewmodel.LoginViewModel
 
 class LoginView : View() {
 

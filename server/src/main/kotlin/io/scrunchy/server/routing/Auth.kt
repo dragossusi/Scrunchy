@@ -1,23 +1,20 @@
 package io.scrunchy.server.routing
 
-import io.scrunchy.server.auth.JwtConfig
-import io.scrunchy.server.database.AppRolesTable
-import io.scrunchy.server.database.UsersTable
-import io.scrunchy.server.entity.AppRoleEntity
-import io.scrunchy.server.entity.UserEntity
-import io.scrunchy.common.BaseDataResponse
-import io.scrunchy.common.BaseCompletableResponse
-import io.scrunchy.common.User
+import com.squareup.moshi.Moshi
 import io.ktor.application.call
 import io.ktor.http.Parameters
 import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import kotlinx.serialization.UnstableDefault
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
-import org.jetbrains.exposed.sql.and
+import io.scrunchy.common.User
+import io.scrunchy.server.auth.JwtConfig
+import io.scrunchy.server.database.AppRolesTable
+import io.scrunchy.server.database.UsersTable
+import io.scrunchy.server.entity.AppRoleEntity
+import io.scrunchy.server.entity.UserEntity
+import io.scrunchy.server.moshi.dataResponse
+import io.scrunchy.server.moshi.errorResponse
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -40,16 +37,17 @@ import org.jetbrains.exposed.sql.transactions.transaction
  *
  */
 
-@UnstableDefault
-fun Route.routeAuth() {
+fun Route.routeAuth(moshi: Moshi) {
     post("/register") {
-        val user = registerUser(call.receiveParameters())
+        val user = registerUser(call.parameters)
         user?.let {
-            call.respond(Json.stringify(BaseDataResponse.serializer(User.serializer()), BaseDataResponse.success(it)))
-        } ?: call.respond(BaseCompletableResponse.error(listOf("cant register")))
+            call.respond(
+                moshi.dataResponse(it)
+            )
+        } ?: call.respond(moshi.errorResponse(listOf("cant register")))
     }
     post("/login") {
-        val params = call.parameters
+        val params = call.receiveParameters()
         val userName = params["username"]!!
         val password = params["password"]!!
         val user = transaction {
@@ -59,11 +57,8 @@ fun Route.routeAuth() {
         }
 
         call.respond(
-            Json.stringify(
-                BaseDataResponse.serializer(String.serializer()),
-                BaseDataResponse.success(
-                    JwtConfig.makeToken(user)
-                )
+            moshi.dataResponse(
+                JwtConfig.makeToken(user)
             )
         )
     }

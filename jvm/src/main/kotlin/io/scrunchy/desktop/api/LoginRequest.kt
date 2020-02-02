@@ -1,4 +1,4 @@
-package api
+package io.scrunchy.desktop.api
 
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*

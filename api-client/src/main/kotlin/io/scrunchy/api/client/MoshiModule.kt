@@ -1,9 +1,9 @@
-package io.scrunchy.server
+package io.scrunchy.api.client
 
-import io.scrunchy.common.User
-import retrofit2.Response
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.POST
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.util.*
 
 /**
  * Scrunchy
@@ -24,10 +24,13 @@ import retrofit2.http.POST
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-interface AuthApi {
+object MoshiModule {
 
-    @FormUrlEncoded
-    @POST("register")
-    suspend fun registerUser() : Response<User>
+    fun moshi(): Moshi {
+        return Moshi.Builder()
+            .add(Date::class.java, Rfc3339DateJsonAdapter())
+            .add(KotlinJsonAdapterFactory())
+            .build()
+    }
 
 }

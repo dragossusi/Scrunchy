@@ -1,11 +1,7 @@
 package io.scrunchy.server.routing
 
-import io.scrunchy.server.auth.user
-import io.scrunchy.server.database.ProjectsTable
-import io.scrunchy.server.entity.ProjectEntity
-import io.scrunchy.server.entity.UserEntity
+import com.squareup.moshi.Moshi
 import io.ktor.application.call
-import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.request.receiveParameters
@@ -14,9 +10,14 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import io.scrunchy.common.*
-import kotlinx.serialization.UnstableDefault
-import kotlinx.serialization.json.Json
+import io.scrunchy.common.PaginationResponse
+import io.scrunchy.server.auth.user
+import io.scrunchy.server.database.ProjectsTable
+import io.scrunchy.server.entity.ProjectEntity
+import io.scrunchy.server.entity.UserEntity
+import io.scrunchy.server.moshi.dataResponse
+import io.scrunchy.server.moshi.errorResponse
+import io.scrunchy.server.moshi.listDataResponse
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -39,12 +40,11 @@ import org.jetbrains.exposed.sql.transactions.transaction
  *
  */
 
-@UnstableDefault
-fun Route.routeProjects() {
+fun Route.routeProjects(moshi: Moshi) {
     route("projects") {
         get {
             try {
-                val user = call.principal<User>()!!
+                val user = call.user!!
                 val queries = call.request.queryParameters
                 val limit = queries["limit"]?.toInt() ?: 10
                 val lastId = queries["last_id"]?.toLong() ?: 0L
@@ -56,12 +56,10 @@ fun Route.routeProjects() {
                     it.toProject()
                 }
                 call.respond(
-                    Json.stringify(
-                        ListResponse.serializer(Project.serializer()),
-                        ListResponse.success(arrayProjects, pagination = PaginationResponse(
+                    moshi.listDataResponse(
+                        arrayProjects, pagination = PaginationResponse(
                             limit,
                             lastId
-                        )
                         )
                     )
                 )
@@ -69,7 +67,7 @@ fun Route.routeProjects() {
                 e.printStackTrace()
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    BaseCompletableResponse.error(
+                    moshi.errorResponse(
                         listOf(e.message ?: "unknown error")
                     )
                 )
@@ -78,17 +76,15 @@ fun Route.routeProjects() {
         post {
             val user = call.user!!
             call.respond(
-                Json.stringify(
-                    BaseDataResponse.serializer(Project.serializer()),
-                    BaseDataResponse.success(
-                        insertProject(
-                            user,
-                            call.receiveParameters()
-                        ).toProject())
+                moshi.dataResponse(
+                    insertProject(
+                        user,
+                        call.receiveParameters()
+                    ).toProject()
                 )
             )
         }
-        routeIssues()
+        routeIssues(moshi)
     }
 }
 

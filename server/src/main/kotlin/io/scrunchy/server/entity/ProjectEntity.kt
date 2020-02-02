@@ -35,7 +35,7 @@ class ProjectEntity(id: EntityID<Long>) : LongEntity(id), ProjectData {
     override var creator by UserEntity referencedOn ProjectsTable.creator
 
     fun toProject() = Project(
-        projectId, name, description, creator
+        projectId, name, description, creator.toUser()
     )
 
     companion object ProjectDao : LongEntityClass<ProjectEntity>(

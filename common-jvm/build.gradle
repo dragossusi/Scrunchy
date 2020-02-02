@@ -4,6 +4,8 @@ apply plugin: 'kotlin-kapt'
 dependencies {expectedBy project(':common')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    //ktor
     api "io.ktor:ktor-server-core:$ktor_version"
 
     //moshi

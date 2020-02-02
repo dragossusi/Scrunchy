@@ -1,4 +1,4 @@
-package view
+package io.scrunchy.desktop.view
 
 import data.ProjectData
 import tornadofx.*
