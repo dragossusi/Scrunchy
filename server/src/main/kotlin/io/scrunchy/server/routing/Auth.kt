@@ -15,6 +15,7 @@ import io.scrunchy.server.entity.AppRoleEntity
 import io.scrunchy.server.entity.UserEntity
 import io.scrunchy.server.moshi.dataResponse
 import io.scrunchy.server.moshi.errorResponse
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**

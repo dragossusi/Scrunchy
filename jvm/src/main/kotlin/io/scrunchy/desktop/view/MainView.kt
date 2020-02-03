@@ -1,11 +1,30 @@
 package io.scrunchy.desktop.view
 
 import data.ProjectData
+import io.scrunchy.common.AppRole
+import io.scrunchy.common.Project
+import io.scrunchy.common.User
 import tornadofx.*
 
 class MainView : View() {
 
-    val projects = mutableListOf<ProjectData>().asObservable()
+    val projects = mutableListOf<ProjectData>(
+        Project(
+            System.currentTimeMillis(),
+            "asdfg",
+            "asdfg",
+            User(
+                System.currentTimeMillis(),
+                "dragossusi",
+                "Rachieru Dragos",
+                AppRole(
+                    System.currentTimeMillis(),
+                    "admin",
+                    "admin"
+                )
+            )
+        )
+    ).asObservable()
 
     override val root = hbox {
         vbox {
