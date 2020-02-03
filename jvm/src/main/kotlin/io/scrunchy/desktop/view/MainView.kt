@@ -38,11 +38,6 @@ class MainView : View() {
             text("Sal cf?") {
 
             }
-            listview(projects) {
-                cellFormat {
-                    text = it.name
-                }
-            }
         }
         prefWidth = 720.0
         prefHeight = 640.0

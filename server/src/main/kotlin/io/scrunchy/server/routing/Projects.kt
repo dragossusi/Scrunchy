@@ -11,6 +11,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.scrunchy.common.PaginationResponse
+import io.scrunchy.common.Project
 import io.scrunchy.server.auth.user
 import io.scrunchy.server.database.ProjectsTable
 import io.scrunchy.server.entity.ProjectEntity
@@ -52,12 +53,11 @@ fun Route.routeProjects(moshi: Moshi) {
                     limit,
                     lastId,
                     user.userId
-                ).toList().map {
-                    it.toProject()
-                }
+                )
                 call.respond(
                     moshi.listDataResponse(
-                        arrayProjects, pagination = PaginationResponse(
+                        arrayProjects,
+                        pagination = PaginationResponse(
                             limit,
                             lastId
                         )
@@ -80,7 +80,7 @@ fun Route.routeProjects(moshi: Moshi) {
                     insertProject(
                         user,
                         call.receiveParameters()
-                    ).toProject()
+                    )
                 )
             )
         }
@@ -92,13 +92,15 @@ fun getMyProjects(
     limit: Int,
     lastId: Long,
     creatorId: Long
-) = transaction {
+): List<Project> = transaction {
     ProjectEntity.find {
         ProjectsTable.creator eq creatorId
         ProjectsTable.id greater lastId
-    }
-        .limit(limit)
+    }.limit(limit)
         .toList()
+        .map {
+            it.toProject()
+        }
 }
 
 fun insertProject(user: UserEntity, parameters: Parameters) = transaction {
@@ -106,5 +108,5 @@ fun insertProject(user: UserEntity, parameters: Parameters) = transaction {
         name = parameters["name"]!!
         description = parameters["description"]!!
         creator = user
-    }
+    }.toProject()
 }

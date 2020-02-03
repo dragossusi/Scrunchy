@@ -4,3 +4,5 @@ include ':common', ':common-jvm'
 include ':jvm'
 include ':api-client'
 enableFeaturePreview('GRADLE_METADATA')
+include 'web'
+

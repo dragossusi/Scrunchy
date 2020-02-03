@@ -1,10 +1,7 @@
 package io.scrunchy.api.client
 
-import com.squareup.moshi.Moshi
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import okhttp3.Interceptor
+import okhttp3.Response
 
 /**
  * Scrunchy
@@ -25,23 +22,13 @@ import retrofit2.converter.moshi.MoshiConverterFactory
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-object RetrofitModule {
+class TokenInterceptor(private val tokenSaving: TokenSaving) : Interceptor {
 
-    fun retrofit(
-        host: String,
-        moshi: Moshi,
-        tokenInterceptor: TokenInterceptor
-    ): Retrofit {
-        return Retrofit.Builder()
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor(tokenInterceptor)
-                    .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-                    .build()
-            )
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl(host)
-            .build()
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val token = tokenSaving.accessToken ?: return chain.proceed(chain.request())
+        val request = chain.request().newBuilder().apply {
+            addHeader("Authorization", "Bearer ${tokenSaving.accessToken}")
+        }.build()
+        return chain.proceed(request)
     }
-
 }

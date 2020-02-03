@@ -1,8 +1,8 @@
 package io.scrunchy.server.entity
 
 import data.ProjectData
-import io.scrunchy.server.database.ProjectsTable
 import io.scrunchy.common.Project
+import io.scrunchy.server.database.ProjectsTable
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -38,8 +38,6 @@ class ProjectEntity(id: EntityID<Long>) : LongEntity(id), ProjectData {
         projectId, name, description, creator.toUser()
     )
 
-    companion object ProjectDao : LongEntityClass<ProjectEntity>(
-        ProjectsTable
-    )
+    companion object ProjectDao : LongEntityClass<ProjectEntity>(ProjectsTable)
 
 }

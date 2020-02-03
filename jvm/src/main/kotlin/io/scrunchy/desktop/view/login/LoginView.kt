@@ -1,8 +1,10 @@
-package io.scrunchy.desktop.view
+package io.scrunchy.desktop.view.login
 
 import io.scrunchy.desktop.controller.LoginController
-import tornadofx.*
+import io.scrunchy.desktop.view.login.LoginStyle
 import io.scrunchy.desktop.viewmodel.LoginViewModel
+import javafx.geometry.Orientation
+import tornadofx.*
 
 class LoginView : View() {
 
@@ -10,25 +12,31 @@ class LoginView : View() {
     val loginModel = LoginViewModel()
 
     override val root = form {
-        fieldset {
-            field("Username") {
+        addClass(LoginStyle.formClass)
+        fieldset(labelPosition = Orientation.VERTICAL) {
+            field("Username", orientation = Orientation.VERTICAL) {
+                addClass(LoginStyle.fieldClass)
                 textfield(loginModel.username) {
-
+                    addClass(LoginStyle.inputClass)
                 }
             }
-            field("Password") {
+            field("Password", orientation = Orientation.VERTICAL) {
+                addClass(LoginStyle.fieldClass)
                 passwordfield(loginModel.password) {
-
+                    addClass(LoginStyle.inputClass)
                 }
             }
             field("Remember me") {
+                addClass(LoginStyle.fieldClass)
                 checkbox(property = loginModel.remember)
             }
         }
-        button("login") {
+        button("Login") {
+            addClass(LoginStyle.buttonClass)
+            useMaxWidth = true
             isDefaultButton = true
-            action{
-                loginModel.commit{
+            action {
+                loginModel.commit {
                     loginController.tryLogin(
                         loginModel.username.value,
                         loginModel.password.value,

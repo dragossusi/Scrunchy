@@ -7,11 +7,11 @@ import io.ktor.auth.authenticate
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.scrunchy.server.database.AppRolesTable
-import io.scrunchy.server.database.UsersTable
 import io.scrunchy.server.auth.installAuth
+import io.scrunchy.server.database.AppRolesTable
 import io.scrunchy.server.database.IssuesTable
 import io.scrunchy.server.database.ProjectsTable
+import io.scrunchy.server.database.UsersTable
 import io.scrunchy.server.entity.AppRoleEntity
 import io.scrunchy.server.routing.routeAuth
 import io.scrunchy.server.routing.routeProjects

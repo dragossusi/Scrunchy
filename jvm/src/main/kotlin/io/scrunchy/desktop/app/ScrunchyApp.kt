@@ -2,21 +2,26 @@ package io.scrunchy.desktop.app
 
 import io.scrunchy.api.client.MoshiModule
 import io.scrunchy.api.client.RetrofitModule
-import io.scrunchy.desktop.api.Auth
-import io.scrunchy.desktop.view.LoginView
+import io.scrunchy.api.client.TokenInterceptor
+import io.scrunchy.api.client.TokenSaving
+import io.scrunchy.desktop.api.AuthDataSource
+import io.scrunchy.desktop.api.ConfigTokenSaving
+import io.scrunchy.desktop.api.ProjectsDataSource
+import io.scrunchy.desktop.view.login.LoginStyle
+import io.scrunchy.desktop.view.login.LoginView
 import tornadofx.App
-import tornadofx.DIContainer
 import tornadofx.FX
 import tornadofx.launch
-import kotlin.reflect.KClass
 
-class ScrunchyApp : App(LoginView::class) {
+class ScrunchyApp : App(LoginView::class, LoginStyle::class) {
 
     init {
         val moshi = MoshiModule.moshi()
+        val tokenSaving = ConfigTokenSaving(config)
         val retrofit = RetrofitModule.retrofit(
             "http://localhost:8080",
-            moshi
+            moshi,
+            TokenInterceptor(tokenSaving)
         )
 //        FX.dicontainer = object : DIContainer{
 //
@@ -24,7 +29,9 @@ class ScrunchyApp : App(LoginView::class) {
 //
 //            }
 //        }
-        FX.getComponents().put(Auth::class, retrofit.create(Auth::class.java))
+        FX.getComponents().put(ConfigTokenSaving::class, tokenSaving)
+        FX.getComponents().put(AuthDataSource::class, retrofit.create(AuthDataSource::class.java))
+        FX.getComponents().put(ProjectsDataSource::class, retrofit.create(ProjectsDataSource::class.java))
 //        io.scrunchy.desktop.api.engine.requestInterceptor = {
 //
 //        }

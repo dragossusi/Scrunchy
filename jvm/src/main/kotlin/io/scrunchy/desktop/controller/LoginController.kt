@@ -1,18 +1,20 @@
 package io.scrunchy.desktop.controller
 
-import io.scrunchy.desktop.api.Auth
-import io.scrunchy.desktop.view.LoginView
-import io.scrunchy.desktop.view.MainView
+import io.scrunchy.desktop.api.AuthDataSource
+import io.scrunchy.desktop.api.ConfigTokenSaving
+import io.scrunchy.desktop.view.login.LoginView
+import io.scrunchy.desktop.view.projects.list.ProjectsView
 import kotlinx.coroutines.runBlocking
 import tornadofx.Controller
 import tornadofx.FX
 
 class LoginController : Controller() {
 
-    val api: Auth = FX.getComponents().get(Auth::class) as Auth
+    val api: AuthDataSource = FX.getComponents().get(AuthDataSource::class) as AuthDataSource
+    val tokenSaving: ConfigTokenSaving = FX.getComponents().get(ConfigTokenSaving::class) as ConfigTokenSaving
 
     val loginView: LoginView by inject()
-    val mainView: MainView by inject()
+    val mainView: ProjectsView by inject()
 
     fun tryLogin(username: String, password: String, remember: Boolean) {
         runAsync {
@@ -23,6 +25,7 @@ class LoginController : Controller() {
             if (response.isSuccessful) {
                 loginView.clear()
 
+                tokenSaving.accessToken = response.body()!!.data!!
                 if (remember) {
                     with(config) {
                         set(USERNAME to username)

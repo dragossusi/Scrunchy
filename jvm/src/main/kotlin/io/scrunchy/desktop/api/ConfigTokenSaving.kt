@@ -1,6 +1,7 @@
 package io.scrunchy.desktop.api
 
-import io.scrunchy.api.client.AuthApi
+import io.scrunchy.api.client.TokenSaving
+import tornadofx.ConfigProperties
 import tornadofx.ScopedInstance
 
 /**
@@ -22,5 +23,10 @@ import tornadofx.ScopedInstance
  * along with Scrunchy.  If not, see [License](http://www.gnu.org/licenses/) .
  *
  */
-interface Auth : ScopedInstance, AuthApi {
+class ConfigTokenSaving(private val config: ConfigProperties) : TokenSaving,ScopedInstance {
+    override var accessToken: String?
+        get() = config.string("access-token")
+        set(value) {
+            config["access-token"] = value
+        }
 }
