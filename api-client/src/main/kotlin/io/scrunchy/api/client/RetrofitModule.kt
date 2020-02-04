@@ -45,3 +45,20 @@ object RetrofitModule {
     }
 
 }
+
+fun retrofit(
+    host: String,
+    moshi: Moshi,
+    tokenInterceptor: TokenInterceptor
+): Retrofit {
+    return Retrofit.Builder()
+        .client(
+            OkHttpClient.Builder()
+                .addInterceptor(tokenInterceptor)
+                .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                .build()
+        )
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .baseUrl(host)
+        .build()
+}

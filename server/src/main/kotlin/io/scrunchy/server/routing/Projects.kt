@@ -55,7 +55,7 @@ fun Route.routeProjects(moshi: Moshi) {
                     user.userId
                 )
                 call.respond(
-                    moshi.listDataResponse(
+                    moshi.listDataResponse<Project>(
                         arrayProjects,
                         pagination = PaginationResponse(
                             limit,
@@ -97,7 +97,6 @@ fun getMyProjects(
         ProjectsTable.creator eq creatorId
         ProjectsTable.id greater lastId
     }.limit(limit)
-        .toList()
         .map {
             it.toProject()
         }

@@ -1,9 +1,6 @@
 package io.scrunchy.desktop.app
 
-import io.scrunchy.api.client.MoshiModule
-import io.scrunchy.api.client.RetrofitModule
-import io.scrunchy.api.client.TokenInterceptor
-import io.scrunchy.api.client.TokenSaving
+import io.scrunchy.api.client.*
 import io.scrunchy.desktop.api.AuthDataSource
 import io.scrunchy.desktop.api.ConfigTokenSaving
 import io.scrunchy.desktop.api.ProjectsDataSource
@@ -18,7 +15,7 @@ class ScrunchyApp : App(LoginView::class, LoginStyle::class) {
     init {
         val moshi = MoshiModule.moshi()
         val tokenSaving = ConfigTokenSaving(config)
-        val retrofit = RetrofitModule.retrofit(
+        val retrofit = retrofit(
             "http://localhost:8080",
             moshi,
             TokenInterceptor(tokenSaving)

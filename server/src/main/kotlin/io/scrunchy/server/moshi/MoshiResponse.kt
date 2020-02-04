@@ -41,10 +41,7 @@ inline fun <reified T> Moshi.listDataResponse(list: List<T>, pagination: Paginat
     return adapter<ListResponse<T>>(
         Types.newParameterizedType(
             ListResponse::class.java,
-            Types.newParameterizedType(
-                List::class.java,
-                T::class.java
-            )
+            T::class.java
         )
     ).toJson(ListResponse.success(list, pagination))
 }
